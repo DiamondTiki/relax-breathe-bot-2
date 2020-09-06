@@ -29,12 +29,18 @@ module.exports = {
           console.log( `⌛ scheduling ${ bot.name } (${file}): ${ botInterval }` );
 
           if (Array.isArray(bot.interval)) {
-            bot.cronjobs = [];
+            if (typeof bot.cronjobs === "undefined") bot.cronjobs = [];
+            if (typeof bot.crontimes === "undefined") bot.crontimes = [];
             bot.interval.forEach( function(cron_line) {
-              const job = new CronJob( cron_line, function() { bot.script() } ); 
-              bot.cronjobs.push(job);
-              job.start();
-              console.log( '📅 next run:', job.nextDates().fromNow() );
+              var job = new CronJob( cron_line, function() { bot.script() } );
+              var job_time = job.cronTime.source;
+              
+              if (!bot.crontimes.includes(job_time)) {
+                bot.cronjobs.push(job);              
+                bot.crontimes.push(job_time);
+                job.start();
+                console.log( '📅 next run:', job.nextDates().fromNow() );
+              }
             });
             /*bot.cronjob = bot.cronjobs;*/
           } else {
